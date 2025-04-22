@@ -1,0 +1,38 @@
+<mat-form-field appearance="fill" class="full-width">
+  <mat-label>Rendezés</mat-label>
+  <mat-select>
+    <mat-option value="price">Ár szerint</mat-option>
+    <mat-option value="capacity">Férőhely szerint</mat-option>
+  </mat-select>
+</mat-form-field>
+
+<mat-divider></mat-divider>
+
+
+<div class="venue-container">
+  <mat-card *ngFor="let venue of venues" class="venue-card">
+    <img mat-card-image [src]="venue.imageUrl" [alt]="venue.name" />
+
+    <mat-card-title>{{ venue.name }}</mat-card-title>
+
+    <mat-card-subtitle>
+      <mat-icon aria-hidden="false" aria-label="location">place</mat-icon>
+      {{ venue.location }}
+    </mat-card-subtitle>
+
+    <mat-card-content>
+      <p>Férőhely: {{ venue.capacity }}</p>
+      <p>Ár: {{ venue.price | priceFormat }}</p>
+      <p *ngIf="venue.availableDates.length > 0">
+        Elérhető dátumok: {{ venue.availableDates.join(', ') }}
+      </p>
+      <p *ngIf="venue.availableDates.length === 0">
+        Nincs elérhető dátum
+      </p>
+    </mat-card-content>
+
+    <mat-card-actions>
+      <button mat-raised-button color="primary">Foglalás</button>
+    </mat-card-actions>
+  </mat-card>
+</div>

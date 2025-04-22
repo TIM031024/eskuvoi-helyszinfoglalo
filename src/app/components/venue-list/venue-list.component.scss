@@ -1,0 +1,15 @@
+.venue-container {
+  display: grid;
+  gap: 1rem;
+  padding: 1rem;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+}
+
+.venue-card {
+  max-width: 100%;
+}
+
+.full-width {
+  width: 100%;
+  margin-bottom: 1rem;
+}
