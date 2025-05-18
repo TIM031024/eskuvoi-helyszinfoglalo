@@ -1,37 +1,34 @@
-import { Injectable } from '@angular/core';
-import { Firestore, collection, collectionData } from '@angular/fire/firestore';
-import { Timestamp } from 'firebase/firestore';
-import { Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
-import { Venue } from '../models/venue.model';
+// src/app/services/venue.service.ts
+
+import { Injectable, Injector, inject, runInInjectionContext } from '@angular/core';
+import { Firestore, collection, collectionData }                 from '@angular/fire/firestore';
+import { Timestamp }                                            from 'firebase/firestore';
+import { Observable }                                           from 'rxjs';
+import { map }                                                  from 'rxjs/operators';
+import { Venue }                                                from '../models/venue.model';
 
 @Injectable({ providedIn: 'root' })
 export class VenueService {
-  constructor(private firestore: Firestore) {}
+  // Az Angular aktuális injector példánya
+  private injector = inject(Injector);
+  // A Firestore-példány is injektálva
+  private firestore = inject(Firestore);
 
   /**  
-   * Lekérdezi a 'venues' kollekciót, és a Firestore Timestamp-okat
-   * JS Date objektumokká alakítja át, hogy a DatePipe működjön.  
+   * A 'venues' kollekciót long-pollinggal kérdezzük le,
+   * és átalakítjuk a Firestore Timestamp-eket sima Date-ekké.
    */
   getVenues(): Observable<Venue[]> {
-    const coll = collection(this.firestore, 'venues');
-    return collectionData<any>(coll, { idField: 'id' }).pipe(
-      map(docs =>
-        docs.map(doc => {
-          // Ha van availableDates tömb, konvertáljuk
-          const raw = doc.availableDates;
-          const availableDates: Date[] = Array.isArray(raw)
-            ? raw.map((ts: any) =>
-                ts instanceof Timestamp ? ts.toDate() : new Date(ts)
-              )
-            : [];
-
-          return {
-            ...doc,
-            availableDates
-          } as Venue;
-        })
-      )
-    );
-  }
-}
+    // runInInjectionContext most az Injector-t kapja, nem a this-t
+    return runInInjectionContext(this.injector, () => {
+      const venuesColl = collection(this.firestore, 'venues');
+      return collectionData<any>(venuesColl, { idField: 'id' }).pipe(
+        map(docs =>
+          docs.map(doc => {
+            const rawDates = doc.availableDates;
+            const availableDates: Date[] = Array.isArray(rawDates)
+              ? rawDates.map((ts: any) =>
+                  ts instanceof Timestamp ? ts.toDate() : new Date(ts)
+                )
+              : [];
+            return { ...doc, availableDates }

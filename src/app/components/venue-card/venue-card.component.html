@@ -1,5 +1,9 @@
 <mat-card class="venue-card" [class.highlight]="highlight">
-  <img mat-card-image [src]="venue.imageUrl" [alt]="venue.name" />
+  <img
+    mat-card-image
+    [src]="venue.imageUrl"
+    [alt]="venue.name"
+  />
 
   <mat-card-title>{{ venue.name }}</mat-card-title>
 
@@ -8,14 +12,15 @@
     <p>Ár: {{ venue.price | currency:'HUF' }}</p>
     <p>Kapacitás: {{ venue.capacity }}</p>
 
-    <!-- Dátumok kiírása -->
-    <p *ngIf="showDates && venue.availableDates.length > 0">
+    <!-- Dátumlista csak akkor, ha showDates és van legalább 1 elem -->
+    <p *ngIf="showDates && (venue.availableDates?.length ?? 0) > 0">
       Elérhető időpontok:
       <ng-container *ngFor="let d of venue.availableDates; let last = last">
         {{ d | date:'shortDate' }}<span *ngIf="!last"> – </span>
       </ng-container>
     </p>
-    <p *ngIf="!showDates || venue.availableDates.length === 0">
+    <!-- Egyébként nincs dátum -->
+    <p *ngIf="!showDates || (venue.availableDates?.length ?? 0) === 0">
       Nincs elérhető időpont.
     </p>
 

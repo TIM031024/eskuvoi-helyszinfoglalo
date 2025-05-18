@@ -6,5 +6,5 @@ export interface Venue {
   capacity: number;
   amenities: string[];
   imageUrl?: string;
-  availableDates?: Date[];
+  availableDates: Date[];
 }
