@@ -1,3 +1,26 @@
-<app-venue-list></app-venue-list>
-<h2>Helyszínfoglalás</h2>
-<app-booking-form (bookingSubmitted)="handleBooking($event)"></app-booking-form>
+<div class="sidenav-container">
+
+  <!-- oldalsó menü -->
+  <mat-sidenav #drawer class="sidenav" mode="side">
+    <mat-nav-list>
+      <a mat-list-item routerLink="/venues">Helyszínek</a>
+      <a mat-list-item routerLink="/bookings">Foglalásaim</a>
+      <a mat-list-item routerLink="/admin">Admin</a>
+    </mat-nav-list>
+  </mat-sidenav>
+
+  <!-- tartalom -->
+  <div class="content">
+    <mat-toolbar class="toolbar">
+      <!-- mobil menü gomb, csak keskeny nézetben látható -->
+      <button mat-icon-button class="mobile-menu" (click)="drawer.toggle()">
+        <mat-icon>menu</mat-icon>
+      </button>
+      <span>Esküvői Helyszínfoglaló</span>
+    </mat-toolbar>
+
+    <!-- ide töltődik be a routed komponensek sablonja -->
+    <router-outlet></router-outlet>
+  </div>
+
+</div>

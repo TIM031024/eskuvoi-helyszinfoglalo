@@ -2,7 +2,7 @@ export interface Booking {
   id: string;
   venueId: string;
   userId: string;
-  date: string;
-  guests: number;
-  durationHours: number;
+  dateFrom: Date;
+  dateTo: Date;
+  totalPrice: number;
 }

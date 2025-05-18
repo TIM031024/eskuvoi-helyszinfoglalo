@@ -1,8 +1,6 @@
-export interface Review {
+export interface User {
   id: string;
-  venueId: string;
-  userId: string;
-  rating: number;
-  comment: string;
-  createdAt: string;
+  name: string;
+  email: string;
+  avatarUrl?: string;
 }

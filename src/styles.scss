@@ -1,4 +1,33 @@
-/* You can add global styles to this file, and also import other style files */
+/* teljes képernyős konténer, két oszlop: sidenav + content */
+.sidenav-container {
+  display: flex;
+  height: 100vh; /* viewport magasság */
+}
 
-html, body { height: 100%; }
-body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+/* fix szélesség az oldalsó menünek */
+.sidenav {
+  width: 250px;
+  flex-shrink: 0;
+}
+
+/* a fő tartalom vertikális flex */
+.content {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+
+/* a toolbar-on belüli mobil-gomb alapból rejtve */
+.toolbar .mobile-menu {
+  display: none;
+}
+
+/* Keskeny nézet (<768px): eltüntetjük a sidenav-et, megjelenítjük a mobil-gombot */
+@media (max-width: 768px) {
+  .sidenav {
+    display: none;
+  }
+  .toolbar .mobile-menu {
+    display: inline-flex;
+  }
+}

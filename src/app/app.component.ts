@@ -1,23 +1,19 @@
-import { Component } from '@angular/core';
-import { VenueListComponent } from './components/venue-list/venue-list.component';
-import { BookingFormComponent } from './components/booking-form/booking-form.component';
-import { Booking } from './models/booking.model';
+import { Component, ViewChild } from '@angular/core';
+import { MatSidenav }           from '@angular/material/sidenav';
+import { RouterModule }         from '@angular/router';
+
+import { MaterialModule }       from './material.module';
 
 @Component({
   selector: 'app-root',
   standalone: true,
   imports: [
-    VenueListComponent,
-    BookingFormComponent
+    MaterialModule,  // toolbar, sidenav, list, button, icon…
+    RouterModule     // router-outlet, routerLink
   ],
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss']
 })
 export class AppComponent {
-  // ✅ Ez kell a teszt sikeres lefutásához
-  title = 'eskuvoi-helyszinfoglalo';
-
-  handleBooking(booking: Booking) {
-    console.log('Foglalás érkezett:', booking);
-  }
+  @ViewChild('drawer') drawer!: MatSidenav;
 }
