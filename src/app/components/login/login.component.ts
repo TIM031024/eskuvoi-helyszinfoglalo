@@ -1,18 +1,18 @@
-import { Component } from '@angular/core';
-import { Router } from '@angular/router';
+// src/app/components/login/login.component.ts
+import { Component }                                       from '@angular/core';
+import { Router }                                          from '@angular/router';
 import {
   FormGroup,
   FormControl,
   Validators,
   ReactiveFormsModule
 } from '@angular/forms';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule }     from '@angular/material/input';
-import { MatCardModule }      from '@angular/material/card';
-import { MatButtonModule }    from '@angular/material/button';
+import { MatFormFieldModule }                              from '@angular/material/form-field';
+import { MatInputModule }                                  from '@angular/material/input';
+import { MatCardModule }                                   from '@angular/material/card';
+import { MatButtonModule }                                 from '@angular/material/button';
 
-// EZ A HELYES ÚTVONAL a services mappához:
-import { AuthService } from '../../services/auth.service';
+import { AuthService }                                     from '../../services/auth.service';
 
 @Component({
   selector: 'app-login',
@@ -38,11 +38,17 @@ export class LoginComponent {
     private router: Router
   ) {}
 
-  onSubmit() {
-    if (this.form.invalid) return;
+  onSubmit(): void {
+    if (this.form.invalid) {
+      return;
+    }
     const { email, password } = this.form.value;
     this.auth.signIn(email!, password!)
       .then(() => this.router.navigate(['/venues']))
-      .catch(err => alert('Hiba: ' + err.message));
+      .catch((err: any) => {
+        // explicit típus megadása az err-nek
+        const msg = err?.message ?? 'Ismeretlen hiba';
+        alert('Hiba: ' + msg);
+      });
   }
 }
