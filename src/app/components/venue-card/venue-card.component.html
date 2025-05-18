@@ -1,6 +1,4 @@
-<!-- src/app/components/venue-card/venue-card.component.html -->
-<mat-card class="venue-card">
-
+<mat-card class="venue-card" [class.highlight]="highlight">
   <img
     mat-card-image
     [src]="venue.imageUrl"
@@ -14,28 +12,20 @@
     <p>Ár: {{ venue.price | currency:'HUF' }}</p>
     <p>Kapacitás: {{ venue.capacity }}</p>
 
-    <button
-      mat-button
-      (click)="showDates = !showDates"
-    >
-      {{ showDates ? 'Rejt dátumok' : 'Mutat dátumokat' }}
+    <!-- Időpontok csak akkor, ha a showDates true és van legalább 1 dátum -->
+    <p *ngIf="showDates && (venue.availableDates?.length ?? 0) > 0">
+      Elérhető időpontok:
+      <ng-container *ngFor="let d of venue.availableDates!; let last = last">
+        {{ d | date:'shortDate' }}<span *ngIf="!last"> - </span>
+      </ng-container>
+    </p>
+    <!-- Egyébként üzenet -->
+    <p *ngIf="!showDates || (venue.availableDates?.length ?? 0) === 0">
+      Nincs elérhető időpont.
+    </p>
+
+    <button mat-button (click)="showDates = !showDates">
+      {{ showDates ? 'Bezárás' : 'Időpontok mutatása' }}
     </button>
-
-    <div *ngIf="showDates">
-      <!-- Csak akkor jelenítsük meg a hosszát, ha nem undefined -->
-      <p *ngIf="venue.availableDates?.length! > 0">
-        Elérhető dátumok:
-      </p>
-
-      <!-- A dateRange pipe-nak coalesce-eljük az undefined-ot egy üres tömbre -->
-      <p *ngIf="venue.availableDates?.length! > 0">
-        {{ (venue.availableDates ?? []) | dateRange:' – ' }}
-      </p>
-
-      <p *ngIf="!(venue.availableDates?.length! > 0)">
-        Nincs elérhető dátum…
-      </p>
-    </div>
   </mat-card-content>
-
 </mat-card>

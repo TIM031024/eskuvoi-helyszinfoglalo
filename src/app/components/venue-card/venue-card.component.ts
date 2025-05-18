@@ -1,11 +1,18 @@
-// src/app/components/venue-card/venue-card.component.ts
 import { Component, Input } from '@angular/core';
-import { Venue } from '../../models/venue.model';
+import { CommonModule }      from '@angular/common';
+import { MatCardModule }     from '@angular/material/card';
+import { MatButtonModule }   from '@angular/material/button';
+import { MatIconModule }     from '@angular/material/icon';
+import { Venue }             from '../../models/venue.model';
 
 @Component({
   selector: 'app-venue-card',
   standalone: true,
   imports: [
+    CommonModule,
+    MatCardModule,
+    MatButtonModule,
+    MatIconModule
   ],
   templateUrl: './venue-card.component.html',
   styleUrls: ['./venue-card.component.scss']
@@ -13,6 +20,7 @@ import { Venue } from '../../models/venue.model';
 export class VenueCardComponent {
   @Input() venue!: Venue;
 
+  @Input() showDates = false;
 
-  showDates = false;
+  @Input() highlight = false;
 }

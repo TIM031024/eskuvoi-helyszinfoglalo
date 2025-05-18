@@ -1,20 +1,7 @@
-<mat-form-field appearance="fill" class="full-width">
-  <mat-label>Rendezés</mat-label>
-  <mat-select [(value)]="sortKey">
-    <mat-option value="price">Ár szerint</mat-option>
-    <mat-option value="capacity">Férőhely szerint</mat-option>
-  </mat-select>
-</mat-form-field>
-
-<mat-divider></mat-divider>
-
-<div class="venue-container">
+<div class="venue-list">
   <app-venue-card
     *ngFor="let v of venues"
     [venue]="v"
     [highlight]="v.capacity > 100"
-    [showDates]="true"
-    (book)="onBook(v.id)"
-    (moreInfo)="onMoreInfo(v.id)">
-  </app-venue-card>
+  ></app-venue-card>
 </div>
