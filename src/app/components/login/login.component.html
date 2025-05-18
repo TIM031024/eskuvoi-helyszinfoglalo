@@ -1,0 +1,26 @@
+<!-- src/app/components/login/login.component.html -->
+<mat-card class="login-card">
+  <form [formGroup]="form" (ngSubmit)="onSubmit()">
+    <h2>Bejelentkezés</h2>
+
+    <mat-form-field appearance="fill" class="full-width">
+      <mat-label>Email</mat-label>
+      <input matInput formControlName="email" type="email" />
+      <mat-error *ngIf="form.controls.email.invalid">
+        Kérlek, adj meg érvényes email címet!
+      </mat-error>
+    </mat-form-field>
+
+    <mat-form-field appearance="fill" class="full-width">
+      <mat-label>Jelszó</mat-label>
+      <input matInput formControlName="password" type="password" />
+      <mat-error *ngIf="form.controls.password.invalid">
+        Minimum 6 karakter a jelszó!
+      </mat-error>
+    </mat-form-field>
+
+    <button mat-raised-button color="primary" type="submit" [disabled]="form.invalid">
+      Bejelentkezés
+    </button>
+  </form>
+</mat-card>
