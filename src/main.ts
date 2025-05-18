@@ -1,23 +1,38 @@
-import { enableProdMode, importProvidersFrom } from '@angular/core';
-import { bootstrapApplication } from '@angular/platform-browser';
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { MaterialModule } from './app/material.module';
-import { AppComponent } from './app/app.component';
-import { environment } from './environments/environment';
-import { appConfig } from './app/app.config';
+import { bootstrapApplication }        from '@angular/platform-browser';
+import { importProvidersFrom }         from '@angular/core';
+import { BrowserAnimationsModule }     from '@angular/platform-browser/animations';
+import { provideRouter }               from '@angular/router';
+import { provideZoneChangeDetection }  from '@angular/core';
 
 import { provideFirebaseApp, initializeApp } from '@angular/fire/app';
-import { provideFirestore, getFirestore } from '@angular/fire/firestore';
+import { provideFirestore, initializeFirestore } from '@angular/fire/firestore';
 
-if (environment.production) {
-  enableProdMode();
-}
+import { AppComponent } from './app/app.component';
+import { environment }  from './environments/environment';
+import { routes }       from './app/app.routes';
 
 bootstrapApplication(AppComponent, {
   providers: [
-    importProvidersFrom(BrowserAnimationsModule, MaterialModule),
-    ...appConfig.providers,
+    // Angular Material animációk
+    importProvidersFrom(BrowserAnimationsModule),
+
+    // Routing + optimalizált change detection
+    provideRouter(routes),
+    provideZoneChangeDetection({ eventCoalescing: true }),
+
+    // Firebase App
     provideFirebaseApp(() => initializeApp(environment.firebase)),
-    provideFirestore(() => getFirestore()),
+
+    // Firestore longPolling-gal
+    provideFirestore(() => {
+      // initializeApp() újrahívása biztonságos, mert singleton marad
+      const app = initializeApp(environment.firebase);
+
+      return initializeFirestore(app, {
+        experimentalForceLongPolling: true
+        // a useFetchStreams: false opciót eltávolítottuk,
+        // mert a FirestoreSettings definíciója ma már nem tartalmazza
+      });
+    }),
   ]
-}).catch(err => console.error('Bootstrap failed:', err));
+}).catch(err => console.error(err));
