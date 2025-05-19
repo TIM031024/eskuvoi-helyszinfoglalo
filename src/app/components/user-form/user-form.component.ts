@@ -49,21 +49,18 @@ export class UserFormComponent implements OnInit {
     this.errorMessage = '';
 
     if (form.valid && this.user.email && this.user.password) {
-      this.authService.register(this.user.email, this.user.password)
-        .then(cred => {
-          const firebaseUser = cred.user;
-          if (!firebaseUser) {
-            // soha nem kellene előfordulnia, de a TS nyugodt legyen
-            throw new Error('Regisztrációs hiba: nem érkezett felhasználó.');
-          }
-          const profile: User = {
-            id:    firebaseUser.uid,
-            name:  this.user.name!,
-            email: this.user.email!,
-            phone: this.user.phone ?? ''
-          };
-          return this.userService.create(profile);
-        })
+      this.authService
+  .register(this.user.email!, this.user.password!)
+  .then(cred => {
+    if (!cred.user) throw new Error('Üres felhasználó a regisztrációnál.');
+    const profile = {
+      id: cred.user.uid,
+      name: this.user.name!,
+      email: this.user.email!,
+      phone: this.user.phone ?? ''
+    };
+    return this.userService.create(profile);
+  })
         .then(() => {
           this.successMessage = 'Regisztráció sikeres, beléptél!';
           this.router.navigate(['/venues']);
