@@ -1,6 +1,4 @@
-// src/app/services/auth.service.ts
-
-import { Injectable } from '@angular/core';
+import { Injectable, Injector, runInInjectionContext } from '@angular/core';
 import {
   Auth,
   createUserWithEmailAndPassword,
@@ -10,17 +8,29 @@ import {
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
-  constructor(private auth: Auth) {}
+  constructor(
+    private auth: Auth,
+    private injector: Injector
+  ) {}
 
   register(email: string, password: string): Promise<UserCredential> {
-    return createUserWithEmailAndPassword(this.auth, email, password);
+    return runInInjectionContext(
+      this.injector,
+      () => createUserWithEmailAndPassword(this.auth, email, password)
+    );
   }
 
   login(email: string, password: string): Promise<UserCredential> {
-    return signInWithEmailAndPassword(this.auth, email, password);
+    return runInInjectionContext(
+      this.injector,
+      () => signInWithEmailAndPassword(this.auth, email, password)
+    );
   }
 
   logout(): Promise<void> {
-    return this.auth.signOut();
+    return runInInjectionContext(
+      this.injector,
+      () => this.auth.signOut()
+    );
   }
 }
