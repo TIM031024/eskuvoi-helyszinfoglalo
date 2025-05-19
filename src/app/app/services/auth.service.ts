@@ -1,34 +1,41 @@
-import { Injectable, inject } from '@angular/core';
-import {
-  Auth,
-  UserCredential,
-  signInWithEmailAndPassword,
-  signOut,
-  onAuthStateChanged
-} from '@angular/fire/auth';
+// src/app/services/auth.service.ts
+import { Injectable } from '@angular/core';
+import { AngularFireAuth } from '@angular/fire/compat/auth';  // vagy a projektedben használt Fire auth import
 import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 
-@Injectable({ providedIn: 'root' })
+@Injectable({
+  providedIn: 'root'
+})
 export class AuthService {
-  private auth = inject(Auth);
+  /** Firebase-beli authState Observable: vagy user, vagy null */
+  public user$: Observable<firebase.default.User | null>;
 
-  /** Valósidejű user‐stream */
-  user$: Observable<any> = new Observable(subscriber => {
-    onAuthStateChanged(this.auth, user => subscriber.next(user));
-  });
-
-  /** Bejelentkezés email/jelszó párossal */
-  signIn(email: string, password: string): Promise<UserCredential> {
-    return signInWithEmailAndPassword(this.auth, email, password);
+  constructor(private afAuth: AngularFireAuth) {
+    this.user$ = this.afAuth.authState;
   }
 
-  /** Kijelentkezés */
-  signOut(): Promise<void> {
-    return signOut(this.auth);
+  /**
+   * Belépett-e a felhasználó?
+   * @returns Observable<boolean>
+   */
+  public isLoggedIn(): Observable<boolean> {
+    return this.user$.pipe(
+      map(user => !!user)
+    );
   }
 
-  /** Szinkron ellenőrzés: van‐e user */
-  isLoggedIn(): boolean {
-    return this.auth.currentUser != null;
+  /**
+   * Bejelentkezés email/jelszó párossal
+   */
+  public signIn(email: string, password: string): Promise<firebase.default.auth.UserCredential> {
+    return this.afAuth.signInWithEmailAndPassword(email, password);
+  }
+
+  /**
+   * Kijelentkezés
+   */
+  public signOut(): Promise<void> {
+    return this.afAuth.signOut();
   }
 }

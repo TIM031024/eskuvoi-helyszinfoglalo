@@ -9,6 +9,7 @@ import { Venue }                                                from '../models/
 
 @Injectable({ providedIn: 'root' })
 export class VenueService {
+  [x: string]: any;
   // Az Angular DI-konténer
   private injector = inject(Injector);
   // A Firestore-példány

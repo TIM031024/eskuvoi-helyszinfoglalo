@@ -1,18 +1,38 @@
-import { Injectable, inject } from '@angular/core';
-import { CanActivate, Router } from '@angular/router';
-import { AuthService }        from '../services/auth.service';
+// src/app/guards/auth.guard.ts
+import { Injectable }                         from '@angular/core';
+import {
+  CanActivate,
+  ActivatedRouteSnapshot,
+  RouterStateSnapshot,
+  Router,
+  UrlTree
+} from '@angular/router';
+import { Observable }                         from 'rxjs';
+import { take, map, tap }                     from 'rxjs/operators';
+import { AuthService }                        from '../services/auth.service';
 
-@Injectable({ providedIn: 'root' })
+@Injectable({
+  providedIn: 'root'
+})
 export class AuthGuard implements CanActivate {
-  private auth   = inject(AuthService);
-  private router = inject(Router);
 
-  canActivate(): boolean {
-    if (this.auth.isLoggedIn()) {
-      return true;
-    }
-    // ha nincs bejelentkezve, átirányítjuk a login oldalra
-    this.router.navigate(['/login']);
-    return false;
+  constructor(
+    private auth: AuthService,
+    private router: Router
+  ) {}
+
+  canActivate(
+    route: ActivatedRouteSnapshot,
+    state: RouterStateSnapshot
+  ): Observable<boolean | UrlTree> {
+    return this.auth.isLoggedIn().pipe(
+      take(1),                 // csak egyszer kérdezzük le
+      map(isLogged => isLogged),
+      tap(isLogged => {
+        if (!isLogged) {
+          this.router.navigate(['/login'], { queryParams: { returnUrl: state.url } });
+        }
+      })
+    );
   }
 }
