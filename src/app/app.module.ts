@@ -26,15 +26,15 @@ import { environment } from '../environments/environment';
     BrowserModule,
     BrowserAnimationsModule,
 
-    // Routing
+    // routing
     RouterModule.forRoot(routes),
 
-    // Firebase compat inicializálás
+    // Firebase compat
     AngularFireModule.initializeApp(environment.firebase),
     AngularFireAuthModule,
     AngularFirestoreModule,
 
-    // Angular Material modulok
+    // Angular Material
     MatToolbarModule,
     MatIconModule,
     MatButtonModule,
@@ -45,4 +45,4 @@ import { environment } from '../environments/environment';
   providers: [],
   bootstrap: [AppComponent]
 })
-export class AppModule {}
+export class AppModule { }
