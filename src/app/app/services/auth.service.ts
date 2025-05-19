@@ -1,26 +1,40 @@
-// src/app/services/auth.service.ts
-import { Injectable }    from '@angular/core';
-import { AngularFireAuth } from '@angular/fire/compat/auth';
+import { Injectable, Injector, runInInjectionContext } from '@angular/core';
+import {
+  Auth,
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  signOut,
+  UserCredential
+} from '@angular/fire/auth';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
-  constructor(private afAuth: AngularFireAuth) {}
+  constructor(
+    private auth: Auth,
+    private injector: Injector
+  ) {}
 
-  /** Megnézi, van-e pillanatnyi bejelentkezett user */
-  public isLoggedIn(): boolean {
-    // !!Promise mindig true, ezért érdemes inkább pl. egy BehaviorSubject-et használnod:
-    // return this.currentUserSubject.value !== null;
-    // de egyszerűsítve (csak demo):    
-    let loggedIn = false;
-    this.afAuth.currentUser.then(user => loggedIn = !!user);
-    return loggedIn;
+  /** email/password regisztráció – moduláris UserCredential-t ad */
+  register(email: string, password: string): Promise<UserCredential> {
+    return runInInjectionContext(
+      this.injector,
+      () => createUserWithEmailAndPassword(this.auth, email, password)
+    );
   }
 
-  public signIn(email: string, password: string): Promise<any> {
-    return this.afAuth.signInWithEmailAndPassword(email, password);
+  /** email/password bejelentkezés – moduláris UserCredential-t ad */
+  login(email: string, password: string): Promise<UserCredential> {
+    return runInInjectionContext(
+      this.injector,
+      () => signInWithEmailAndPassword(this.auth, email, password)
+    );
   }
 
-  public signOut(): Promise<void> {
-    return this.afAuth.signOut();
+  /** kijelentkezés */
+  logout(): Promise<void> {
+    return runInInjectionContext(
+      this.injector,
+      () => signOut(this.auth)
+    );
   }
 }

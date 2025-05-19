@@ -3,6 +3,7 @@ import {
   Auth,
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
+  signOut,
   UserCredential
 } from '@angular/fire/auth';
 
@@ -13,6 +14,7 @@ export class AuthService {
     private injector: Injector
   ) {}
 
+  /** Regisztráció */
   register(email: string, password: string): Promise<UserCredential> {
     return runInInjectionContext(
       this.injector,
@@ -20,6 +22,7 @@ export class AuthService {
     );
   }
 
+  /** Bejelentkezés */
   login(email: string, password: string): Promise<UserCredential> {
     return runInInjectionContext(
       this.injector,
@@ -27,10 +30,11 @@ export class AuthService {
     );
   }
 
+  /** Kijelentkezés */
   logout(): Promise<void> {
     return runInInjectionContext(
       this.injector,
-      () => this.auth.signOut()
+      () => signOut(this.auth)
     );
   }
 }
