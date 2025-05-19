@@ -1,43 +1,51 @@
-// src/app/services/venue.service.ts
+import { Injectable } from '@angular/core';
+import { AngularFirestore } from '@angular/fire/compat/firestore';
+import { Venue } from '../models';
+import { firstValueFrom } from 'rxjs';
 
-import { Injectable, Injector, inject, runInInjectionContext } from '@angular/core';
-import { Firestore, collection, collectionData }                 from '@angular/fire/firestore';
-import { Timestamp }                                            from 'firebase/firestore';
-import { Observable }                                           from 'rxjs';
-import { map }                                                  from 'rxjs/operators';
-import { Venue }                                                from '../models/venue.model';
-
-@Injectable({ providedIn: 'root' })
+@Injectable({
+  providedIn: 'root'
+})
 export class VenueService {
-  [x: string]: any;
-  // Az Angular DI-konténer
-  private injector = inject(Injector);
-  // A Firestore-példány
-  private firestore = inject(Firestore);
+  private readonly collectionName = 'venues';
 
-  /**  
-   * Lekérdezi a 'venues' kollekciót, 
-   * és a Firestore Timestamp-eket Date objektumokká alakítja.  
-   * A hívás az Angular injector-zónából történik.
-   */
-  getVenues(): Observable<Venue[]> {
-    return runInInjectionContext(this.injector, () => {
-      const venuesColl = collection(this.firestore, 'venues');
-      return collectionData<any>(venuesColl, { idField: 'id' }).pipe(
-        map(docs =>
-          docs.map(doc => {
-            // Timestamp[] → Date[] konverzió
-            const rawDates = doc.availableDates;
-            const availableDates: Date[] = Array.isArray(rawDates)
-              ? rawDates.map((ts: any) =>
-                  ts instanceof Timestamp ? ts.toDate() : new Date(ts)
-                )
-              : [];
-            // Visszaadjuk a Venue objektumot
-            return { ...doc, availableDates } as Venue;
-          })
-        )
+  constructor(private afs: AngularFirestore) {}
+
+  /** Összes helyszín lekérése Promise-ként */
+  getAll(): Promise<Venue[]> {
+    return firstValueFrom(
+      this.afs
+        .collection<Venue>(this.collectionName)
+        .valueChanges({ idField: 'id' })
+    );
+  }
+
+  getById(id: string): Promise<Venue | undefined> {
+    return this.afs
+      .collection<Venue>(this.collectionName)
+      .doc(id)
+      .get()
+      .toPromise()
+      .then(snapshot =>
+        snapshot.exists
+          ? ({ id: snapshot.id, ...snapshot.data()! } as Venue)
+          : undefined
       );
-    });
+  }
+
+  /** Új helyszín létrehozása */
+  create(venue: Omit<Venue, 'id'>): Promise<void> {
+    const id = this.afs.createId();
+    return this.afs.doc<Venue>(`${this.collectionName}/${id}`).set({ id, ...venue });
+  }
+
+  /** Helyszín frissítése */
+  update(id: string, data: Partial<Venue>): Promise<void> {
+    return this.afs.doc<Venue>(`${this.collectionName}/${id}`).update(data);
+  }
+
+  /** Helyszín törlése */
+  delete(id: string): Promise<void> {
+    return this.afs.doc<Venue>(`${this.collectionName}/${id}`).delete();
   }
 }

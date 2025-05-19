@@ -3,6 +3,9 @@ import { Router }     from '@angular/router';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
+  isLoggedIn() {
+    throw new Error('Method not implemented.');
+  }
   private _loggedIn = false;
     signIn: any;
 

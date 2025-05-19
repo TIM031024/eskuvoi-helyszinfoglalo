@@ -1,41 +1,65 @@
 <h2 mat-dialog-title>
-  {{ data.mode === 'create' ? 'Új helyszín hozzáadása' : 'Helyszín szerkesztése' }}
+  {{ isEditMode ? 'Helyszín szerkesztése' : 'Új helyszín' }}
 </h2>
+<mat-dialog-content>
+  <form #venueForm="ngForm">
+    <mat-form-field appearance="fill" class="full-width">
+      <mat-label>Név</mat-label>
+      <input
+        matInput
+        name="name"
+        [(ngModel)]="venue.name"
+        required
+        #nameModel="ngModel"
+      />
+      <mat-error
+        *ngIf="nameModel.invalid && (nameModel.dirty || nameModel.touched)"
+      >
+        A név megadása kötelező.
+      </mat-error>
+    </mat-form-field>
 
-<form [formGroup]="form" (ngSubmit)="onSubmit()" mat-dialog-content>
-  <mat-form-field appearance="fill" class="full-width">
-    <mat-label>Név</mat-label>
-    <input matInput formControlName="name" />
-    <mat-error *ngIf="form.controls.name.invalid">A név megadása kötelező!</mat-error>
-  </mat-form-field>
+    <mat-form-field appearance="fill" class="full-width">
+      <mat-label>Cím</mat-label>
+      <input
+        matInput
+        name="address"
+        [(ngModel)]="venue.address"
+        required
+        #addressModel="ngModel"
+      />
+      <mat-error
+        *ngIf="addressModel.invalid && (addressModel.dirty || addressModel.touched)"
+      >
+        A cím megadása kötelező.
+      </mat-error>
+    </mat-form-field>
 
-  <mat-form-field appearance="fill" class="full-width">
-    <mat-label>Helyszín</mat-label>
-    <input matInput formControlName="location" />
-    <mat-error *ngIf="form.controls.location.invalid">A helyszín megadása kötelező!</mat-error>
-  </mat-form-field>
-
-  <mat-form-field appearance="fill" class="full-width">
-    <mat-label>Ár (HUF)</mat-label>
-    <input matInput formControlName="price" type="number" />
-    <mat-error *ngIf="form.controls.price.invalid">Az árnak >=0-nak kell lennie!</mat-error>
-  </mat-form-field>
-
-  <mat-form-field appearance="fill" class="full-width">
-    <mat-label>Kapacitás</mat-label>
-    <input matInput formControlName="capacity" type="number" />
-    <mat-error *ngIf="form.controls.capacity.invalid">Legalább 1 fő!</mat-error>
-  </mat-form-field>
-
-  <mat-form-field appearance="fill" class="full-width">
-    <mat-label>Kép URL</mat-label>
-    <input matInput formControlName="imageUrl" type="url" />
-  </mat-form-field>
-</form>
-
+    <mat-form-field appearance="fill" class="full-width">
+      <mat-label>Kapacitás</mat-label>
+      <input
+        matInput
+        type="number"
+        name="capacity"
+        [(ngModel)]="venue.capacity"
+        required
+        min="1"
+        #capacityModel="ngModel"
+      />
+      <mat-error
+        *ngIf="capacityModel.invalid && (capacityModel.dirty || capacityModel.touched)"
+      >
+        <span *ngIf="capacityModel.errors?.['required']">
+          A kapacitás megadása kötelező.
+        </span>
+        <span *ngIf="capacityModel.errors?.['min']">Legalább 1.</span>
+      </mat-error>
+    </mat-form-field>
+  </form>
+</mat-dialog-content>
 <mat-dialog-actions align="end">
   <button mat-button (click)="onCancel()">Mégse</button>
-  <button mat-raised-button color="primary" [disabled]="form.invalid" (click)="onSubmit()">
-    {{ data.mode === 'create' ? 'Létrehozás' : 'Mentés' }}
+  <button mat-raised-button color="primary" (click)="onSave(venueForm)">
+    Mentés
   </button>
 </mat-dialog-actions>

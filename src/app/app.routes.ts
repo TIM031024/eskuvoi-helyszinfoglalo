@@ -8,7 +8,7 @@ import { BookingFormComponent }   from './components/booking-form/booking-form.c
 import { LoginComponent }         from './components/login/login.component';
 import { VenueAdminComponent }    from './components/venue-admin/venue-admin.component';
 
-import { AuthGuard }              from './guards/auth.guard';
+
 
 // A Routes tömb, minden útvonal teljes beállítása
 export const routes: Routes = [
@@ -24,12 +24,10 @@ export const routes: Routes = [
   {
     path: 'bookings',
     component: BookingFormComponent,
-    canActivate: [AuthGuard]      // csak bejelentkezett felhasználó láthatja
   },
   {
     path: 'admin',
     component: VenueAdminComponent,
-    canActivate: [AuthGuard]      // admin oldalt is védjük
   },
   {
     path: 'login',

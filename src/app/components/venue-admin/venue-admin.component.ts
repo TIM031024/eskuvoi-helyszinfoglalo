@@ -1,14 +1,14 @@
-// src/app/components/venue-admin/venue-admin.component.ts
-import { Component, OnInit, OnDestroy } from '@angular/core';
-import { CommonModule }    from '@angular/common';
-import { MatTableModule }  from '@angular/material/table';
+import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { MatCardModule } from '@angular/material/card';
+import { MatTableModule } from '@angular/material/table';
 import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule }   from '@angular/material/icon';
-import { MatDialogModule, MatDialog } from '@angular/material/dialog';
+import { MatIconModule } from '@angular/material/icon';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 
+import { Venue } from '../../models';
 import { VenueService } from '../../services/venue.service';
-import { Venue }        from '../../models/venue.model';
-import { Subscription } from 'rxjs';
 import { VenueEditDialogComponent } from './venue-edit-dialog.component';
 
 @Component({
@@ -16,48 +16,68 @@ import { VenueEditDialogComponent } from './venue-edit-dialog.component';
   standalone: true,
   imports: [
     CommonModule,
+    MatCardModule,
     MatTableModule,
     MatButtonModule,
     MatIconModule,
-    MatDialogModule
+    MatTooltipModule,
+    MatDialogModule,
+    VenueEditDialogComponent
   ],
   templateUrl: './venue-admin.component.html',
-  styleUrls:   ['./venue-admin.component.scss']
+  styleUrls: ['./venue-admin.component.css']
 })
-export class VenueAdminComponent implements OnInit, OnDestroy {
+export class VenueAdminComponent implements OnInit {
   venues: Venue[] = [];
-  private sub?: Subscription;
-  columns = ['name','location','price','capacity','actions'];
+  displayedColumns = ['name', 'address', 'capacity', 'actions'];
 
   constructor(
-    private vs:     VenueService,
+    private venueService: VenueService,
     private dialog: MatDialog
   ) {}
 
   ngOnInit(): void {
-    this.sub = this.vs.getVenues()
-      .subscribe(data => this.venues = data);
+    this.loadVenues();
   }
 
-  ngOnDestroy(): void {
-    this.sub?.unsubscribe();
+  loadVenues(): void {
+    this.venueService.getAll()
+      .then((data: Venue[]) => this.venues = data)
+      .catch(err => console.error('Error loading venues', err));
   }
 
-  add(): void {
-    this.dialog.open(VenueEditDialogComponent, {
-      data: { mode: 'create' }
+  addVenue(): void {
+    const ref = this.dialog.open(VenueEditDialogComponent, {
+      width: '400px',
+      data: { venue: null }
+    });
+    ref.afterClosed().subscribe((result: any) => {
+      if (result?.venue) {
+        this.venueService.create(result.venue)
+          .then(() => this.loadVenues())
+          .catch(err => console.error('Error adding venue', err));
+      }
     });
   }
 
-  edit(v: Venue): void {
-    this.dialog.open(VenueEditDialogComponent, {
-      data: { mode: 'edit', venue: v }
+  editVenue(venue: Venue): void {
+    const ref = this.dialog.open(VenueEditDialogComponent, {
+      width: '400px',
+      data: { venue }
+    });
+    ref.afterClosed().subscribe((result: any) => {
+      if (result?.venue) {
+        const updated = result.venue as Venue;
+        this.venueService.update(updated.id, updated)
+          .then(() => this.loadVenues())
+          .catch(err => console.error('Error updating venue', err));
+      }
     });
   }
 
-  delete(v: Venue): void {
-    this.vs['deleteVenue'](v.id)
-      .then(() => this.venues = this.venues.filter(x => x.id !== v.id))
-      .catch((err: any) => console.error('Törlési hiba:', err));
+  deleteVenue(id: string): void {
+    this.venueService.delete(id)
+      .then(() => this.loadVenues())
+      .catch(err => console.error('Error deleting venue', err));
   }
 }

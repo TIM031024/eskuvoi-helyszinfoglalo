@@ -1,0 +1,66 @@
+<mat-card>
+  <mat-card-title>Új felhasználó létrehozása</mat-card-title>
+  <mat-card-content>
+    <form #userForm="ngForm" (ngSubmit)="onSubmit(userForm)">
+      <mat-form-field appearance="fill" class="full-width">
+        <mat-label>Teljes név</mat-label>
+        <input
+          matInput
+          name="name"
+          [(ngModel)]="user.name"
+          required
+          minlength="3"
+          #nameModel="ngModel"
+        />
+        <mat-error *ngIf="nameModel.invalid && (nameModel.dirty || nameModel.touched)">
+          <span *ngIf="nameModel.errors?.['required']">A név megadása kötelező.</span>
+          <span *ngIf="nameModel.errors?.['minlength']">Legalább 3 karakter.</span>
+        </mat-error>
+      </mat-form-field>
+
+      <mat-form-field appearance="fill" class="full-width">
+        <mat-label>Email cím</mat-label>
+        <input
+          matInput
+          name="email"
+          [(ngModel)]="user.email"
+          required
+          email
+          #emailModel="ngModel"
+        />
+        <mat-error *ngIf="emailModel.invalid && (emailModel.dirty || emailModel.touched)">
+          <span *ngIf="emailModel.errors?.['required']">Az email megadása kötelező.</span>
+          <span *ngIf="emailModel.errors?.['email']">Érvényes email cím.</span>
+        </mat-error>
+      </mat-form-field>
+
+      <mat-form-field appearance="fill" class="full-width">
+        <mat-label>Telefonszám</mat-label>
+        <input
+          matInput
+          name="phone"
+          [(ngModel)]="user.phone"
+          pattern="^[0-9]{10,15}$"
+          #phoneModel="ngModel"
+        />
+        <mat-error *ngIf="phoneModel.invalid && (phoneModel.dirty || phoneModel.touched)">
+          <span *ngIf="phoneModel.errors?.['pattern']">
+            Csak számjegyek, 10–15 karakter.
+          </span>
+        </mat-error>
+      </mat-form-field>
+
+      <button
+        mat-raised-button
+        color="primary"
+        type="submit"
+        [disabled]="userForm.invalid"
+      >
+        Létrehozás
+      </button>
+    </form>
+
+    <p class="success" *ngIf="successMessage">{{ successMessage }}</p>
+    <p class="error" *ngIf="errorMessage">{{ errorMessage }}</p>
+  </mat-card-content>
+</mat-card>

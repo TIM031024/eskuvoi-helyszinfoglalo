@@ -1,40 +1,25 @@
 // src/app/services/auth.service.ts
-import { Injectable } from '@angular/core';
-import { AngularFireAuth } from '@angular/fire/compat/auth';  // vagy a projektedben használt Fire auth import
-import { Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { Injectable }    from '@angular/core';
+import { AngularFireAuth } from '@angular/fire/compat/auth';
 
-@Injectable({
-  providedIn: 'root'
-})
+@Injectable({ providedIn: 'root' })
 export class AuthService {
-  /** Firebase-beli authState Observable: vagy user, vagy null */
-  public user$: Observable<firebase.default.User | null>;
+  constructor(private afAuth: AngularFireAuth) {}
 
-  constructor(private afAuth: AngularFireAuth) {
-    this.user$ = this.afAuth.authState;
+  /** Megnézi, van-e pillanatnyi bejelentkezett user */
+  public isLoggedIn(): boolean {
+    // !!Promise mindig true, ezért érdemes inkább pl. egy BehaviorSubject-et használnod:
+    // return this.currentUserSubject.value !== null;
+    // de egyszerűsítve (csak demo):    
+    let loggedIn = false;
+    this.afAuth.currentUser.then(user => loggedIn = !!user);
+    return loggedIn;
   }
 
-  /**
-   * Belépett-e a felhasználó?
-   * @returns Observable<boolean>
-   */
-  public isLoggedIn(): Observable<boolean> {
-    return this.user$.pipe(
-      map(user => !!user)
-    );
-  }
-
-  /**
-   * Bejelentkezés email/jelszó párossal
-   */
-  public signIn(email: string, password: string): Promise<firebase.default.auth.UserCredential> {
+  public signIn(email: string, password: string): Promise<any> {
     return this.afAuth.signInWithEmailAndPassword(email, password);
   }
 
-  /**
-   * Kijelentkezés
-   */
   public signOut(): Promise<void> {
     return this.afAuth.signOut();
   }

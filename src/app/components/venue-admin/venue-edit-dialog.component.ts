@@ -1,65 +1,56 @@
-import { Component, Inject }                          from '@angular/core';
-import { MatDialogRef, MAT_DIALOG_DATA }              from '@angular/material/dialog';
-import { FormGroup, FormControl, Validators, ReactiveFormsModule } from '@angular/forms';
-import { VenueService }                               from '../../services/venue.service';
-import { Venue }                                      from '../../models/venue.model';
-import { MatFormFieldModule }                         from '@angular/material/form-field';
-import { MatInputModule }                             from '@angular/material/input';
-import { MatButtonModule }                            from '@angular/material/button';
+import { Component, Inject } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule, NgForm } from '@angular/forms';
+import { MatDialogModule, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatButtonModule } from '@angular/material/button';
+
+import { Venue } from '../../models';
 
 export interface VenueDialogData {
-  mode:  'create' | 'edit';
-  venue?: Venue;
+  venue: Venue | null;
 }
 
 @Component({
   selector: 'app-venue-edit-dialog',
   standalone: true,
   imports: [
-    ReactiveFormsModule,
+    CommonModule,
+    FormsModule,
+    MatDialogModule,
     MatFormFieldModule,
     MatInputModule,
     MatButtonModule
   ],
   templateUrl: './venue-edit-dialog.component.html',
-  styleUrls: ['./venue-edit-dialog.component.scss']
+  styleUrls: ['./venue-edit-dialog.component.css']
 })
 export class VenueEditDialogComponent {
-  form: FormGroup;
+  venue: Partial<Venue> = {};
+  isEditMode = false;
 
   constructor(
-    private vs: VenueService,
-    private dialogRef: MatDialogRef<VenueEditDialogComponent>,
+    public dialogRef: MatDialogRef<VenueEditDialogComponent>,
     @Inject(MAT_DIALOG_DATA) public data: VenueDialogData
   ) {
-    // Ha van editelésre kapott venue, előtöltjük
-    const v = data.venue;
-    this.form = new FormGroup({
-      name:       new FormControl(v?.name ?? '', [Validators.required]),
-      location:   new FormControl(v?.location ?? '', [Validators.required]),
-      price:      new FormControl(v?.price ?? 0, [Validators.required, Validators.min(0)]),
-      capacity:   new FormControl(v?.capacity ?? 0, [Validators.required, Validators.min(1)]),
-      imageUrl:   new FormControl(v?.imageUrl ?? '', []),
-    });
-  }
-
-  onSubmit() {
-    if (this.form.invalid) return;
-    const payload = this.form.value as Omit<Venue, 'id' | 'availableDates'> & { availableDates?: Date[] };
-    if (this.data.mode === 'create') {
-      // új doksi létrehozása
-      this.vs.addVenue({ ...payload, availableDates: [] }).then(() => this.dialogRef.close(true));
-    } else {
-      // meglévő frissítése
-      const updated: Venue = {
-        ...this.data.venue!,
-        ...payload
-      };
-      this.vs.updateVenue(updated).then(() => this.dialogRef.close(true));
+    if (data.venue) {
+      this.isEditMode = true;
+      this.venue = { ...data.venue };
     }
   }
 
-  onCancel() {
-    this.dialogRef.close(false);
+  onSave(form: NgForm): void {
+    if (form.valid) {
+      const resultVenue = this.isEditMode
+        ? { id: (this.data.venue as Venue).id, ...this.venue }
+        : (this.venue as Omit<Venue, 'id'>);
+
+      this.dialogRef.close({ venue: resultVenue });
+    }
+  }
+
+  onCancel(): void {
+    this.dialogRef.close();
   }
 }
