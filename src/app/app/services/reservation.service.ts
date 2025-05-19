@@ -1,3 +1,5 @@
+// src/app/services/reservation.service.ts
+
 import { Injectable } from '@angular/core';
 import { AngularFirestore } from '@angular/fire/compat/firestore';
 import { Reservation }      from '../models';
@@ -10,7 +12,7 @@ export class ReservationService {
 
   constructor(private afs: AngularFirestore) {}
 
-  /** Observable-ként szolgáltatja az összes foglalást */
+  /** Összes foglalás lekérése Observable-ként */
   getAll(): Observable<Reservation[]> {
     return this.afs
       .collection<Reservation>(this.collectionName)
@@ -26,25 +28,10 @@ export class ReservationService {
       );
   }
 
-  /** Egy foglalás lekérése Promise-ként, a Firestore .ref.get() API-val */
-  getById(id: string): Promise<Reservation | undefined> {
-    return this.afs
-      .doc<Reservation>(`${this.collectionName}/${id}`)
-      .ref
-      .get()
-      .then(snapshot => {
-        if (!snapshot.exists) {
-          return undefined;
-        }
-        const data = snapshot.data() as Omit<Reservation, 'id'>;
-        return { ...data, id: snapshot.id };
-      });
-  }
-
-  /** Új foglalás */
-  create(res: Omit<Reservation, 'id'>): Promise<void> {
+  /** Új foglalás létrehozása */
+  create(reservation: Omit<Reservation, 'id'>): Promise<void> {
     const id = this.afs.createId();
-    return this.afs.doc(`${this.collectionName}/${id}`).set({ id, ...res });
+    return this.afs.doc(`${this.collectionName}/${id}`).set({ id, ...reservation });
   }
 
   /** Foglalás frissítése */
@@ -52,8 +39,11 @@ export class ReservationService {
     return this.afs.doc(`${this.collectionName}/${id}`).update(data);
   }
 
-  /** Csak státusz módosítása */
-  updateStatus(id: string, status: 'PENDING' | 'CONFIRMED' | 'CANCELLED'): Promise<void> {
+  /** Csak a státusz módosítása */
+  updateStatus(
+    id: string,
+    status: 'PENDING' | 'CONFIRMED' | 'CANCELLED'
+  ): Promise<void> {
     return this.update(id, { status });
   }
 

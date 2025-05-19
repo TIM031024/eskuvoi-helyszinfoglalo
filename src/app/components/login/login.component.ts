@@ -1,53 +1,57 @@
-// src/app/components/login/login.component.ts
-import { Component }                        from '@angular/core';
-import { Router }                           from '@angular/router';
-import { CommonModule, NgIf }               from '@angular/common';
+
+import { Component, OnInit } from '@angular/core';
+import { CommonModule }            from '@angular/common';
 import {
   ReactiveFormsModule,
+  FormBuilder,
   FormGroup,
-  FormControl,
   Validators
 } from '@angular/forms';
-import { MatFormFieldModule }               from '@angular/material/form-field';
-import { MatInputModule }                   from '@angular/material/input';
-import { MatCardModule }                    from '@angular/material/card';
-import { MatButtonModule }                  from '@angular/material/button';
+import { MatCardModule }      from '@angular/material/card';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule }     from '@angular/material/input';
+import { MatButtonModule }    from '@angular/material/button';
+import { Router }             from '@angular/router';
 
-import { AuthService }                      from '../../services/auth.service';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-login',
   standalone: true,
   imports: [
     CommonModule,
-    NgIf,
     ReactiveFormsModule,
+    MatCardModule,
     MatFormFieldModule,
     MatInputModule,
-    MatCardModule,
     MatButtonModule
   ],
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.scss']
 })
-export class LoginComponent {
-  form = new FormGroup({
-    email:    new FormControl('', [Validators.required, Validators.email]),
-    password: new FormControl('', [Validators.required, Validators.minLength(6)])
-  });
+export class LoginComponent implements OnInit {
+  loginForm!: FormGroup;
+  errorMessage = '';
 
   constructor(
-    private auth:   AuthService,
+    private fb: FormBuilder,
+    private authService: AuthService,
     private router: Router
   ) {}
 
+  ngOnInit(): void {
+    this.loginForm = this.fb.group({
+      email:    ['', [Validators.required, Validators.email]],
+      password: ['', [Validators.required, Validators.minLength(6)]]
+    });
+  }
+
   onSubmit(): void {
-    if ( this.form.invalid ) {
-      return;
+    if (this.loginForm.valid) {
+      const { email, password } = this.loginForm.value;
+      this.authService.login(email, password)
+        .then(() => this.router.navigate(['/venues']))
+        .catch(err => this.errorMessage = err.message);
     }
-    const { email, password } = this.form.value;
-    this.auth.signIn(email!, password!)
-      .then(() => this.router.navigate(['/venues']))
-      .catch((err: any) => alert('Hiba: ' + err.message));
   }
 }

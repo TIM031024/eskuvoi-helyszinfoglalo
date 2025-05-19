@@ -2,6 +2,7 @@
   <mat-card-title>Új felhasználó létrehozása</mat-card-title>
   <mat-card-content>
     <form #userForm="ngForm" (ngSubmit)="onSubmit(userForm)">
+      <!-- Név -->
       <mat-form-field appearance="fill" class="full-width">
         <mat-label>Teljes név</mat-label>
         <input
@@ -18,11 +19,13 @@
         </mat-error>
       </mat-form-field>
 
+      <!-- Email -->
       <mat-form-field appearance="fill" class="full-width">
         <mat-label>Email cím</mat-label>
         <input
           matInput
           name="email"
+          type="email"
           [(ngModel)]="user.email"
           required
           email
@@ -30,10 +33,29 @@
         />
         <mat-error *ngIf="emailModel.invalid && (emailModel.dirty || emailModel.touched)">
           <span *ngIf="emailModel.errors?.['required']">Az email megadása kötelező.</span>
-          <span *ngIf="emailModel.errors?.['email']">Érvényes email cím.</span>
+          <span *ngIf="emailModel.errors?.['email']">Érvényes email címet adj meg.</span>
         </mat-error>
       </mat-form-field>
 
+      <!-- Jelszó -->
+      <mat-form-field appearance="fill" class="full-width">
+        <mat-label>Jelszó</mat-label>
+        <input
+          matInput
+          name="password"
+          type="password"
+          [(ngModel)]="user.password"
+          required
+          minlength="6"
+          #pwModel="ngModel"
+        />
+        <mat-error *ngIf="pwModel.invalid && (pwModel.dirty || pwModel.touched)">
+          <span *ngIf="pwModel.errors?.['required']">A jelszó megadása kötelező.</span>
+          <span *ngIf="pwModel.errors?.['minlength']">Legalább 6 karakter.</span>
+        </mat-error>
+      </mat-form-field>
+
+      <!-- Telefonszám -->
       <mat-form-field appearance="fill" class="full-width">
         <mat-label>Telefonszám</mat-label>
         <input
@@ -44,9 +66,7 @@
           #phoneModel="ngModel"
         />
         <mat-error *ngIf="phoneModel.invalid && (phoneModel.dirty || phoneModel.touched)">
-          <span *ngIf="phoneModel.errors?.['pattern']">
-            Csak számjegyek, 10–15 karakter.
-          </span>
+          <span *ngIf="phoneModel.errors?.['pattern']">Csak számjegyek (10–15).</span>
         </mat-error>
       </mat-form-field>
 
@@ -56,7 +76,7 @@
         type="submit"
         [disabled]="userForm.invalid"
       >
-        Létrehozás
+        Regisztráció
       </button>
     </form>
 

@@ -1,62 +1,51 @@
 import { Injectable } from '@angular/core';
-import { AngularFirestore } from '@angular/fire/compat/firestore';
-import { User }          from '../models';
-import { Observable }    from 'rxjs';
-import { map }           from 'rxjs/operators';
+import {
+  Firestore,
+  collection,
+  collectionData,
+  doc,
+  docData,
+  setDoc,
+  updateDoc,
+  deleteDoc,
+  CollectionReference,
+  DocumentData
+} from '@angular/fire/firestore';
+import { firstValueFrom, Observable } from 'rxjs';
+import { User } from '../models';
 
-@Injectable({
-  providedIn: 'root'
-})
+@Injectable({ providedIn: 'root' })
 export class UserService {
-  private readonly collectionName = 'users';
+  private usersColl: CollectionReference<User>;
 
-  constructor(private afs: AngularFirestore) {}
-
-  /** Összes felhasználó */
-  getAll(): Observable<User[]> {
-    return this.afs
-      .collection<User>(this.collectionName)
-      .snapshotChanges()
-      .pipe(
-        map(actions =>
-          actions.map(a => {
-            const data = a.payload.doc.data() as User;
-            const id = a.payload.doc.id;
-            // először spreadeljük a data-t, utána adjuk hozzá az id-t
-            return { ...(data as Omit<User, 'id'>), id };
-          })
-        )
-      );
+  constructor(private firestore: Firestore) {
+    this.usersColl = collection(this.firestore, 'users') as CollectionReference<User>;
   }
 
-  /** Egy felhasználó lekérése ID alapján */
-  getById(id: string): Promise<User | undefined> {
-    return this.afs
-      .doc<User>(`${this.collectionName}/${id}`)
-      .get()
-      .toPromise()
-      .then(snapshot => {
-        if (!snapshot || !snapshot.exists) {
-          return undefined;
-        }
-        const data = snapshot.data()!;
-        return { ...(data as Omit<User, 'id'>), id: snapshot.id };
-      });
+  getAll(): Promise<User[]> {
+    return firstValueFrom(
+      collectionData(this.usersColl, { idField: 'id' }) as Observable<User[]>
+    );
   }
 
-  /** Új felhasználó */
-  async create(user: Omit<User, 'id'>): Promise<void> {
-    const id = this.afs.createId();
-    await this.afs.doc(`${this.collectionName}/${id}`).set({ id, ...user });
+  getById(id: string): Promise<User> {
+    const ref = doc(this.usersColl, id);
+    return firstValueFrom(docData(ref, { idField: 'id' }) as Observable<User>);
   }
 
-  /** Felhasználó frissítése */
+  /** Most már teljes User-t várunk, így használhatjuk az Auth UID-t */
+  async create(user: User): Promise<void> {
+    const ref = doc(this.usersColl, user.id);
+    await setDoc(ref, user);
+  }
+
   async update(id: string, data: Partial<User>): Promise<void> {
-    await this.afs.doc(`${this.collectionName}/${id}`).update(data);
+    const ref = doc(this.usersColl, id);
+    await updateDoc(ref, data as DocumentData);
   }
 
-  /** Felhasználó törlése */
   async delete(id: string): Promise<void> {
-    await this.afs.doc(`${this.collectionName}/${id}`).delete();
+    const ref = doc(this.usersColl, id);
+    await deleteDoc(ref);
   }
 }

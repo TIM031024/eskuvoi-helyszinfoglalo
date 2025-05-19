@@ -1,26 +1,26 @@
+// src/app/services/auth.service.ts
+
 import { Injectable } from '@angular/core';
-import { Router }     from '@angular/router';
+import {
+  Auth,
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  UserCredential
+} from '@angular/fire/auth';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
-  isLoggedIn() {
-    throw new Error('Method not implemented.');
-  }
-  private _loggedIn = false;
-    signIn: any;
+  constructor(private auth: Auth) {}
 
-  constructor(private router: Router) {}
-
-  login(): void {
-    this._loggedIn = true;
+  register(email: string, password: string): Promise<UserCredential> {
+    return createUserWithEmailAndPassword(this.auth, email, password);
   }
 
-  logout(): void {
-    this._loggedIn = false;
-    this.router.navigate(['/venues']);
+  login(email: string, password: string): Promise<UserCredential> {
+    return signInWithEmailAndPassword(this.auth, email, password);
   }
 
-  isAuthenticated(): boolean {
-    return this._loggedIn;
+  logout(): Promise<void> {
+    return this.auth.signOut();
   }
 }

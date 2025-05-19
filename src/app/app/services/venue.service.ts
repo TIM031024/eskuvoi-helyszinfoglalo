@@ -1,94 +1,109 @@
 // src/app/services/venue.service.ts
+
 import { Injectable } from '@angular/core';
 import {
   Firestore,
   collection,
   collectionData,
+  doc,
+  docData,
   addDoc,
   updateDoc,
   deleteDoc,
-  doc,
+  query,
+  where,
+  orderBy,
+  limit,
+  startAfter,
   CollectionReference,
-  FirestoreDataConverter,
-  QueryDocumentSnapshot,
   DocumentData
 } from '@angular/fire/firestore';
-import { Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
-import { Venue } from '../models/venue.model';
+import { firstValueFrom, Observable } from 'rxjs';
+import { Venue } from '../../models';
 
-/**
- * 1) Converter a Firestore és a Venue Modell között
- */
-const venueConverter: FirestoreDataConverter<Venue> = {
-  // Firestore-ba íráskor (id nélkül)
-  toFirestore(modelObject: Omit<Venue, 'id'>): DocumentData {
-    return {
-      name:           modelObject['name'],
-      location:       modelObject['location'],
-      price:          modelObject['price'],
-      capacity:       modelObject['capacity'],
-      amenities:      modelObject['amenities'],
-      availableDates: modelObject['availableDates']
-    };
-  },
-  // Firestore-ból olvasáskor (Snapshot → Venue)
-  fromFirestore(
-    snapshot: QueryDocumentSnapshot<DocumentData>
-  ): Venue {
-    const data = snapshot.data();
-    // Timestamp vagy string tömb → JS Date tömb
-    const raw: any[] = data['availableDates'] || [];
-    const availableDates: Date[] = raw.map(ts =>
-      ts && typeof ts.toDate === 'function' ? ts.toDate() : new Date(ts)
-    );
-
-    return {
-      id:             snapshot.id,
-      name:           data['name'],
-      location:       data['location'],
-      price:          data['price'],
-      capacity:       data['capacity'],
-      amenities:      data['amenities'],
-      availableDates
-    };
-  }
-};
-
-@Injectable({
-  providedIn: 'root'
-})
+@Injectable({ providedIn: 'root' })
 export class VenueService {
-  private venuesRef: CollectionReference<Venue>;
+  private venuesColl: CollectionReference<Venue>;
 
   constructor(private firestore: Firestore) {
-    // 2) Inicializáljuk a CollectionReference-et a converterrel
-    this.venuesRef = collection(this.firestore, 'venues')
-      .withConverter<Venue>(venueConverter as any);
+    this.venuesColl = collection(
+      this.firestore,
+      'venues'
+    ) as CollectionReference<Venue>;
   }
 
-  /** 3) Összes helyszín lekérdezése Observable tömbként */
-  getVenues(): Observable<Venue[]> {
-    return collectionData(this.venuesRef, { idField: 'id' }).pipe(
-      map(items => items as Venue[])
+  /** 1. Összes helyszín lekérése */
+  getAll(): Promise<Venue[]> {
+    return firstValueFrom(
+      collectionData(this.venuesColl, { idField: 'id' }) as Observable<Venue[]>
     );
   }
 
-  /** 4) Új helyszín létrehozása (id nélkül) */
-  addVenue(venue: Omit<Venue, 'id'>): Promise<void> {
-    return addDoc(this.venuesRef, venue)
-      .then(() => {}); // ha csak a Promise<void>-ra van szükség
+  /** 2. Egy helyszín lekérése ID alapján */
+  getById(id: string): Promise<Venue> {
+    const ref = doc(this.venuesColl, id);
+    return firstValueFrom(
+      docData(ref, { idField: 'id' }) as Observable<Venue>
+    );
   }
 
-  /** 5) Meglévő helyszín frissítése ID alapján */
-  updateVenue(id: string, partial: Partial<Omit<Venue, 'id'>>): Promise<void> {
-    const ref = doc(this.venuesRef, id);
-    return updateDoc(ref, partial as any);
+  /** 3. Új helyszín létrehozása */
+  async create(venue: Omit<Venue, 'id'>): Promise<void> {
+    await addDoc(this.venuesColl, venue);
   }
 
-  /** 6) Helyszín törlése ID alapján */
-  deleteVenue(id: string): Promise<void> {
-    const ref = doc(this.venuesRef, id);
-    return deleteDoc(ref);
+  /** 4. Helyszín frissítése */
+  async update(id: string, data: Partial<Venue>): Promise<void> {
+    const ref = doc(this.venuesColl, id);
+    await updateDoc(ref, data as DocumentData);
+  }
+
+  /** 5. Helyszín törlése */
+  async delete(id: string): Promise<void> {
+    const ref = doc(this.venuesColl, id);
+    await deleteDoc(ref);
+  }
+
+  /** --- Komplex lekérdezések (#12) --- */
+
+  /** A) capacity > 50 */
+  getLargeVenues(): Promise<Venue[]> {
+    const q = query(this.venuesColl, where('capacity', '>', 50));
+    return firstValueFrom(
+      collectionData(q, { idField: 'id' }) as Observable<Venue[]>
+    );
+  }
+
+  /** B) ABC sorrend (név szerint) */
+  getVenuesOrderedByName(): Promise<Venue[]> {
+    const q = query(this.venuesColl, orderBy('name'));
+    return firstValueFrom(
+      collectionData(q, { idField: 'id' }) as Observable<Venue[]>
+    );
+  }
+
+  /** C) limit: első 10 helyszín */
+  getFirstTenVenues(): Promise<Venue[]> {
+    const q = query(this.venuesColl, limit(10));
+    return firstValueFrom(
+      collectionData(q, { idField: 'id' }) as Observable<Venue[]>
+    );
+  }
+
+  /** D) Pagination: következő oldal név szerinti rendezéssel */
+  async getNextPage(lastDocId: string, pageSize = 5): Promise<Venue[]> {
+    // lekérjük a page töréspontját
+    const lastSnapshot = await firstValueFrom(
+      docData(doc(this.venuesColl, lastDocId), { idField: 'id', refField: 'ref' })
+    ) as any; // refField adja a DocumentReference-t
+    const q = query(
+      this.venuesColl,
+      orderBy('name'),
+      startAfter(lastSnapshot.ref),
+      limit(pageSize)
+    );
+    return firstValueFrom(
+      collectionData(q, { idField: 'id' }) as Observable<Venue[]>
+    );
   }
 }

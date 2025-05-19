@@ -1,18 +1,18 @@
+// src/app/services/reservation.service.ts
+
 import { Injectable } from '@angular/core';
 import { AngularFirestore } from '@angular/fire/compat/firestore';
 import { Reservation }      from '../models';
 import { Observable }       from 'rxjs';
 import { map }              from 'rxjs/operators';
 
-@Injectable({
-  providedIn: 'root'
-})
+@Injectable({ providedIn: 'root' })
 export class ReservationService {
   private readonly collectionName = 'reservations';
 
   constructor(private afs: AngularFirestore) {}
 
-  /** Observable-lista */
+  /** Összes foglalás lekérése Observable-ként */
   getAll(): Observable<Reservation[]> {
     return this.afs
       .collection<Reservation>(this.collectionName)
@@ -28,39 +28,26 @@ export class ReservationService {
       );
   }
 
-  /** Egy foglalás ID alapján */
-  getById(id: string): Promise<Reservation | undefined> {
-    return this.afs
-      .doc<Reservation>(`${this.collectionName}/${id}`)
-      .get()
-      .toPromise()
-      .then(snapshot => {
-        if (!snapshot.exists) return undefined;
-        const data = snapshot.data() as Omit<Reservation, 'id'>;
-        return { ...data, id: snapshot.id };
-      });
-  }
-
-  /** Létrehoz */
-  create(res: Omit<Reservation, 'id'>): Promise<void> {
+  /** Új foglalás létrehozása */
+  create(reservation: Omit<Reservation, 'id'>): Promise<void> {
     const id = this.afs.createId();
-    return this.afs.doc(`${this.collectionName}/${id}`).set({ id, ...res });
+    return this.afs.doc(`${this.collectionName}/${id}`).set({ id, ...reservation });
   }
 
-  /** Frissít */
+  /** Foglalás frissítése */
   update(id: string, data: Partial<Reservation>): Promise<void> {
     return this.afs.doc(`${this.collectionName}/${id}`).update(data);
   }
 
-  /** Csak státusz */
+  /** Csak a státusz módosítása */
   updateStatus(
     id: string,
-    status: 'PENDING' | 'CONFIRMED' | 'CANCELLED'
+    status: Reservation['status']
   ): Promise<void> {
     return this.update(id, { status });
   }
 
-  /** Törlés */
+  /** Foglalás törlése */
   delete(id: string): Promise<void> {
     return this.afs.doc(`${this.collectionName}/${id}`).delete();
   }

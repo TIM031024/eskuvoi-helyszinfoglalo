@@ -1,65 +1,56 @@
 import { Injectable } from '@angular/core';
-import { AngularFirestore } from '@angular/fire/compat/firestore';
+import {
+  Firestore,
+  collection,
+  collectionData,
+  doc,
+  docData,
+  addDoc,
+  updateDoc,
+  deleteDoc,
+  CollectionReference,
+  DocumentData
+} from '@angular/fire/firestore';
+import { firstValueFrom, Observable } from 'rxjs';
 import { Topic } from '../models';
-import { Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
 
-@Injectable({
-  providedIn: 'root'
-})
+@Injectable({ providedIn: 'root' })
 export class TopicService {
-  private readonly collectionName = 'topics';
+  private topicsColl: CollectionReference<Topic>;
 
-  constructor(private afs: AngularFirestore) {}
-
-  /**
-   * Összes téma lekérése Observable-ként.
-   */
-  getAll(): Observable<Topic[]> {
-    return this.afs
-      .collection<Topic>(this.collectionName)
-      .snapshotChanges()
-      .pipe(
-        map(actions =>
-          actions.map(a => {
-            const data = a.payload.doc.data() as Topic;
-            const id = a.payload.doc.id;
-            return { id, ...data };
-          })
-        )
-      );
+  constructor(private firestore: Firestore) {
+    this.topicsColl = collection(this.firestore, 'topics') as CollectionReference<Topic>;
   }
 
-  /**
-   * Egy téma lekérése ID alapján Promise-ként.
-   */
-  getById(id: string): Promise<Topic | undefined> {
-    return this.afs
-      .doc<Topic>(`${this.collectionName}/${id}`)
-      .get()
-      .toPromise()
-      .then(doc => doc.exists ? ({ id: doc.id, ...doc.data() } as Topic) : undefined);
+  /** Összes téma lekérése Promise-ként */
+  getAll(): Promise<Topic[]> {
+    return firstValueFrom(
+      collectionData(this.topicsColl, { idField: 'id' }) as Observable<Topic[]>
+    );
   }
 
-  /**
-   * Új téma létrehozása.
-   */
-  create(topic: Omit<Topic, 'id'>): Promise<void> {
-    const id = this.afs.createId();
-    return this.afs.doc(`${this.collectionName}/${id}`).set({ id, ...topic });
+  /** Egy téma lekérése azonosító alapján */
+  getById(id: string): Promise<Topic> {
+    const ref = doc(this.topicsColl, id);
+    return firstValueFrom(
+      docData(ref, { idField: 'id' }) as Observable<Topic>
+    );
   }
 
-  /**
-   * Téma adatainak frissítése.
-   */
-  update(id: string, data: Partial<Topic>): Promise<void> {
-    return this.afs.doc(`${this.collectionName}/${id}`).update(data);
+  /** Új téma létrehozása */
+  async create(topic: Omit<Topic, 'id'>): Promise<void> {
+    await addDoc(this.topicsColl, topic);
   }
 
-  /**
-   * Téma törlése.
-   */
-  delete(id: string): Promise<void> {
-    return this.afs.doc(`${this.collectionName}/${id}`).delete();
+  /** Téma frissítése */
+  async update(id: string, data: Partial<Topic>): Promise<void> {
+    const ref = doc(this.topicsColl, id);
+    await updateDoc(ref, data as DocumentData);
+  }
+
+  /** Téma törlése */
+  async delete(id: string): Promise<void> {
+    const ref = doc(this.topicsColl, id);
+    await deleteDoc(ref);
   }
 }
