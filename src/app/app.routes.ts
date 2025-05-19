@@ -1,40 +1,25 @@
 import { Routes } from '@angular/router';
 
-// komponensek
-import { VenueListComponent }     from './components/venue-list/venue-list.component';
-import { BookingFormComponent }   from './components/booking-form/booking-form.component';
+import { VenueListComponent }        from './components/venue-list/venue-list.component';
+import { BookingOverviewComponent }  from './components/booking-overview/booking-overview.component';
+import { VenueAdminComponent }       from './components/venue-admin/venue-admin.component';
+import { UserFormComponent }         from './components/user-form/user-form.component';
+import { LoginComponent }            from './components/login/login.component';
 
-// most hozzuk létre a login és admin komponenseket!
-import { LoginComponent }         from './components/login/login.component';
-import { VenueAdminComponent }    from './components/venue-admin/venue-admin.component';
+import { AuthGuard } from './guards/auth.guard';
 
-
-
-// A Routes tömb, minden útvonal teljes beállítása
 export const routes: Routes = [
-  {
-    path: '',
-    redirectTo: 'venues',
-    pathMatch: 'full'
+  { path: '',        redirectTo: 'venues', pathMatch: 'full' },
+  { path: 'venues',  component: VenueListComponent },
+  { path: 'bookings',
+    component: BookingOverviewComponent,
+    canActivate: [AuthGuard]
   },
-  {
-    path: 'venues',
-    component: VenueListComponent
-  },
-  {
-    path: 'bookings',
-    component: BookingFormComponent,
-  },
-  {
-    path: 'admin',
+  { path: 'admin',
     component: VenueAdminComponent,
+    canActivate: [AuthGuard]
   },
-  {
-    path: 'login',
-    component: LoginComponent
-  },
-  {
-    path: '**',
-    redirectTo: 'venues'
-  }
+  { path: 'user/new', component: UserFormComponent },
+  { path: 'login',    component: LoginComponent },
+  { path: '**',       redirectTo: 'venues' }
 ];

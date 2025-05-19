@@ -1,28 +1,30 @@
-import { bootstrapApplication }        from '@angular/platform-browser';
-import { importProvidersFrom }         from '@angular/core';
-import { BrowserAnimationsModule }     from '@angular/platform-browser/animations';
-import { provideRouter }               from '@angular/router';
-import { provideZoneChangeDetection }  from '@angular/core';
+import { enableProdMode, importProvidersFrom } from '@angular/core';
+import { bootstrapApplication }                 from '@angular/platform-browser';
+import { BrowserAnimationsModule }              from '@angular/platform-browser/animations';
+import { provideRouter }                        from '@angular/router';
 
-import { provideFirebaseApp, initializeApp }         from '@angular/fire/app';
-import { provideFirestore, initializeFirestore }     from '@angular/fire/firestore';
+import { provideFirebaseApp, initializeApp } from '@angular/fire/app';
+import { provideAuth,      getAuth      } from '@angular/fire/auth';
+import { provideFirestore, getFirestore } from '@angular/fire/firestore';
 
-import { AppComponent }       from './app/app.component';
-import { environment }        from './environments/environment';
-import { routes }             from './app/app.routes';
+import { AppComponent } from './app/app.component';
+import { environment }  from './environments/environment';
+import { routes }       from './app/app.routes';
 
-// Bootstrap immár az új route-okkal és AuthGuard-dal
+if (environment.production) {
+  enableProdMode();
+}
+
 bootstrapApplication(AppComponent, {
   providers: [
     importProvidersFrom(BrowserAnimationsModule),
 
-    provideRouter(routes),
-    provideZoneChangeDetection({ eventCoalescing: true }),
-
+    // Modular AngularFire
     provideFirebaseApp(() => initializeApp(environment.firebase)),
-    provideFirestore(() => initializeFirestore(
-      initializeApp(environment.firebase),
-      { experimentalForceLongPolling: true }
-    )),
+    provideAuth     (() => getAuth()),
+    provideFirestore(() => getFirestore()),
+
+    // Routing
+    provideRouter(routes)
   ]
 }).catch(err => console.error(err));

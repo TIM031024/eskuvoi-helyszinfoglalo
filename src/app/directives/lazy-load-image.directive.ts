@@ -5,19 +5,21 @@ import { Directive, ElementRef, Input, OnInit } from '@angular/core';
   standalone: true
 })
 export class LazyLoadImageDirective implements OnInit {
-  /** A valódi kép-URL, amit lazy-loadolni akarunk */
-  @Input() appLazyLoadImage!: string;
+  @Input() appLazyLoadImage?: string;
 
   private observer!: IntersectionObserver;
 
   constructor(private el: ElementRef<HTMLImageElement>) {}
 
-  ngOnInit() {
+  ngOnInit(): void {
+    if (!this.appLazyLoadImage) {
+      return;
+    }
     this.observer = new IntersectionObserver(entries => {
       entries.forEach(entry => {
         if (entry.isIntersecting) {
           const img = this.el.nativeElement;
-          img.src = this.appLazyLoadImage;
+          img.src = this.appLazyLoadImage!;
           this.observer.disconnect();
         }
       });

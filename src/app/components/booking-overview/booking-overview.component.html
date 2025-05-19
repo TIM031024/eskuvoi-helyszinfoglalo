@@ -1,0 +1,30 @@
+<mat-card>
+  <mat-card-header>
+    <mat-card-title>Foglalások áttekintése</mat-card-title>
+  </mat-card-header>
+  <mat-card-content>
+    <div *ngIf="bookings.length > 0; else noBookings">
+      <mat-list>
+        <mat-list-item *ngFor="let booking of bookings">
+          <div class="booking-item">
+            <div class="booking-info">
+              <p>Dátum: {{ booking.date | date:'short' }}</p>
+              <p>Felhasználó: {{ booking.userId }}</p>
+            </div>
+            <app-reservation-actions
+              [reservationId]="booking.id"
+              [reservationStatus]="booking.status"
+              [reservationUser]="booking.userId"
+              (confirm)="handleConfirm($event)"
+              (cancel)="handleCancel($event)"
+              (edit)="handleEdit($event)"
+            ></app-reservation-actions>
+          </div>
+        </mat-list-item>
+      </mat-list>
+    </div>
+    <ng-template #noBookings>
+      <p>Nincs megjeleníthető foglalás.</p>
+    </ng-template>
+  </mat-card-content>
+</mat-card>

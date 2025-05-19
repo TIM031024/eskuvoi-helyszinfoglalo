@@ -4,15 +4,13 @@ import { Reservation }      from '../models';
 import { Observable }       from 'rxjs';
 import { map }              from 'rxjs/operators';
 
-@Injectable({
-  providedIn: 'root'
-})
+@Injectable({ providedIn: 'root' })
 export class ReservationService {
   private readonly collectionName = 'reservations';
 
   constructor(private afs: AngularFirestore) {}
 
-  /** Observable-lista */
+  /** Observable-ként szolgáltatja az összes foglalást */
   getAll(): Observable<Reservation[]> {
     return this.afs
       .collection<Reservation>(this.collectionName)
@@ -28,39 +26,38 @@ export class ReservationService {
       );
   }
 
-  /** Egy foglalás ID alapján */
+  /** Egy foglalás lekérése Promise-ként, a Firestore .ref.get() API-val */
   getById(id: string): Promise<Reservation | undefined> {
     return this.afs
       .doc<Reservation>(`${this.collectionName}/${id}`)
+      .ref
       .get()
-      .toPromise()
       .then(snapshot => {
-        if (!snapshot.exists) return undefined;
+        if (!snapshot.exists) {
+          return undefined;
+        }
         const data = snapshot.data() as Omit<Reservation, 'id'>;
         return { ...data, id: snapshot.id };
       });
   }
 
-  /** Létrehoz */
+  /** Új foglalás */
   create(res: Omit<Reservation, 'id'>): Promise<void> {
     const id = this.afs.createId();
     return this.afs.doc(`${this.collectionName}/${id}`).set({ id, ...res });
   }
 
-  /** Frissít */
+  /** Foglalás frissítése */
   update(id: string, data: Partial<Reservation>): Promise<void> {
     return this.afs.doc(`${this.collectionName}/${id}`).update(data);
   }
 
-  /** Csak státusz */
-  updateStatus(
-    id: string,
-    status: 'PENDING' | 'CONFIRMED' | 'CANCELLED'
-  ): Promise<void> {
+  /** Csak státusz módosítása */
+  updateStatus(id: string, status: 'PENDING' | 'CONFIRMED' | 'CANCELLED'): Promise<void> {
     return this.update(id, { status });
   }
 
-  /** Törlés */
+  /** Foglalás törlése */
   delete(id: string): Promise<void> {
     return this.afs.doc(`${this.collectionName}/${id}`).delete();
   }

@@ -1,51 +1,57 @@
 import { Injectable } from '@angular/core';
-import { AngularFirestore } from '@angular/fire/compat/firestore';
+import {
+  Firestore,
+  collection,
+  collectionData,
+  doc,
+  docData,
+  addDoc,
+  updateDoc,
+  deleteDoc
+} from '@angular/fire/firestore';
+import { firstValueFrom, Observable } from 'rxjs';
 import { Venue } from '../models';
-import { firstValueFrom } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
 })
 export class VenueService {
-  private readonly collectionName = 'venues';
+  private venuesColl;
 
-  constructor(private afs: AngularFirestore) {}
+  constructor(private firestore: Firestore) {
+    // inicializáljuk itt, ne osztálymezőn
+    this.venuesColl = collection(this.firestore, 'venues');
+  }
 
   /** Összes helyszín lekérése Promise-ként */
   getAll(): Promise<Venue[]> {
     return firstValueFrom(
-      this.afs
-        .collection<Venue>(this.collectionName)
-        .valueChanges({ idField: 'id' })
+      collectionData(this.venuesColl, { idField: 'id' }) as Observable<Venue[]>
     );
   }
 
-  getById(id: string): Promise<Venue | undefined> {
-    return this.afs
-      .collection<Venue>(this.collectionName)
-      .doc(id)
-      .get()
-      .toPromise()
-      .then(snapshot =>
-        snapshot.exists
-          ? ({ id: snapshot.id, ...snapshot.data()! } as Venue)
-          : undefined
-      );
+  /** Egy helyszín lekérése ID alapján */
+  getById(id: string): Promise<Venue> {
+    const ref = doc(this.venuesColl, id);
+    return firstValueFrom(
+      docData(ref, { idField: 'id' }) as Observable<Venue>
+    );
   }
 
   /** Új helyszín létrehozása */
-  create(venue: Omit<Venue, 'id'>): Promise<void> {
-    const id = this.afs.createId();
-    return this.afs.doc<Venue>(`${this.collectionName}/${id}`).set({ id, ...venue });
+  async create(venue: Omit<Venue, 'id'>): Promise<void> {
+    await addDoc(this.venuesColl, venue);
   }
 
   /** Helyszín frissítése */
-  update(id: string, data: Partial<Venue>): Promise<void> {
-    return this.afs.doc<Venue>(`${this.collectionName}/${id}`).update(data);
+  async update(id: string, data: Partial<Venue>): Promise<void> {
+    const ref = doc(this.venuesColl, id);
+    await updateDoc(ref, data as any);
   }
 
   /** Helyszín törlése */
-  delete(id: string): Promise<void> {
-    return this.afs.doc<Venue>(`${this.collectionName}/${id}`).delete();
+  async delete(id: string): Promise<void> {
+    const ref = doc(this.venuesColl, id);
+    await deleteDoc(ref);
   }
 }

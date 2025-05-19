@@ -2,7 +2,7 @@
   {{ isEditMode ? 'Helyszín szerkesztése' : 'Új helyszín' }}
 </h2>
 <mat-dialog-content>
-  <form #venueForm="ngForm">
+  <form #venueForm="ngForm" class="dialog-form">
     <mat-form-field appearance="fill" class="full-width">
       <mat-label>Név</mat-label>
       <input
@@ -12,9 +12,7 @@
         required
         #nameModel="ngModel"
       />
-      <mat-error
-        *ngIf="nameModel.invalid && (nameModel.dirty || nameModel.touched)"
-      >
+      <mat-error *ngIf="nameModel.invalid && (nameModel.dirty || nameModel.touched)">
         A név megadása kötelező.
       </mat-error>
     </mat-form-field>
@@ -28,9 +26,7 @@
         required
         #addressModel="ngModel"
       />
-      <mat-error
-        *ngIf="addressModel.invalid && (addressModel.dirty || addressModel.touched)"
-      >
+      <mat-error *ngIf="addressModel.invalid && (addressModel.dirty || addressModel.touched)">
         A cím megadása kötelező.
       </mat-error>
     </mat-form-field>
@@ -46,12 +42,8 @@
         min="1"
         #capacityModel="ngModel"
       />
-      <mat-error
-        *ngIf="capacityModel.invalid && (capacityModel.dirty || capacityModel.touched)"
-      >
-        <span *ngIf="capacityModel.errors?.['required']">
-          A kapacitás megadása kötelező.
-        </span>
+      <mat-error *ngIf="capacityModel.invalid && (capacityModel.dirty || capacityModel.touched)">
+        <span *ngIf="capacityModel.errors?.['required']">A kapacitás megadása kötelező.</span>
         <span *ngIf="capacityModel.errors?.['min']">Legalább 1.</span>
       </mat-error>
     </mat-form-field>

@@ -3,19 +3,16 @@
     *ngFor="let venue of venues"
     class="venue-card"
     appHoverHighlight="lightcyan"
-    appTooltip="{{ venue.name }}"
+    [appTooltip]="venue.name"
   >
-    <!-- Lazy-loadolt kép -->
     <img
       mat-card-image
       [appLazyLoadImage]="venue.imageUrl"
       alt="{{ venue.name }}"
     />
-
     <mat-card-header>
       <mat-card-title>{{ venue.name }}</mat-card-title>
     </mat-card-header>
-
     <mat-card-content>
       <p>{{ venue.address }}</p>
       <p>Kapacitás: {{ venue.capacity }}</p>

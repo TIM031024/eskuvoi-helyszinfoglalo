@@ -1,0 +1,25 @@
+<div class="actions">
+  <button
+    mat-icon-button
+    (click)="onConfirm()"
+    [disabled]="reservationStatus === 'CONFIRMED'"
+    matTooltip="Megerősítés"
+  >
+    <mat-icon>check_circle</mat-icon>
+  </button>
+  <button
+    mat-icon-button
+    (click)="onCancel()"
+    [disabled]="reservationStatus === 'CANCELLED'"
+    matTooltip="Lemondás"
+  >
+    <mat-icon>cancel</mat-icon>
+  </button>
+  <button
+    mat-icon-button
+    (click)="onEdit()"
+    matTooltip="Szerkesztés"
+  >
+    <mat-icon>edit</mat-icon>
+  </button>
+</div>

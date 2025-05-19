@@ -1,3 +1,13 @@
 table {
   width: 100%;
 }
+
+mat-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+mat-card-header button {
+  margin-left: auto;
+}
